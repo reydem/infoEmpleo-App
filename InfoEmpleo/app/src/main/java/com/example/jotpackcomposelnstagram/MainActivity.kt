@@ -20,6 +20,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.jotpackcomposelnstagram.login.ui.HomeScreen
 import com.example.jotpackcomposelnstagram.login.ui.LoginScreen
 import com.example.jotpackcomposelnstagram.login.ui.LoginViewModel
 import com.example.jotpackcomposelnstagram.ui.theme.JotpackComposelnstagramTheme
@@ -80,14 +81,5 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun HomeScreen(modifier: Modifier) {
-    // Aquí defines el resto de tu UI de la pantalla de inicio
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "Esto es el contenido de HomeScreen")
-    }
-}
+
 
