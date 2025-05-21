@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
 
                 // 2. Definir el grafo de navegación
                 NavHost(
-                    navController    = navController,
+                    navController = navController,
                     startDestination = "login"
                 ) {
                     // Pantalla de login
@@ -72,7 +72,9 @@ class MainActivity : ComponentActivity() {
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(bottom = 16.dp)
                             )
-                            HomeScreen(modifier = Modifier.fillMaxSize())
+                            composable("home") {
+                                HomeScreen()    // el VM se inyecta automáticamente
+                            }
                         }
                     }
                 }
