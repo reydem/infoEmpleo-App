@@ -57,26 +57,22 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
-                    // Pantalla de inicio tras login exitoso
-                    composable("home") {
-                        // Envolvemos en Column para apilar el texto y la UI principal
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(top = 50.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "¡Bienvenido de nuevo!",
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-                            composable("home") {
-                                HomeScreen()    // el VM se inyecta automáticamente
-                            }
-                        }
-                    }
+                     composable("home") {
+                             Column(
+                                     modifier = Modifier
+                                                 .fillMaxSize()
+                                                 .padding(top = 50.dp),
+                                     horizontalAlignment = Alignment.CenterHorizontally
+                                         ) {
+                                     Text(
+                                             text = "¡Bienvenido de nuevo!",
+                                             fontSize = 24.sp,
+                                             fontWeight = FontWeight.Bold,
+                                             modifier = Modifier.padding(bottom = 16.dp)
+                                                 )
+                                     HomeScreen()  // aquí inyectamos el ViewModel y mostramos la UI
+                                 }
+                         }
                 }
             }
         }
