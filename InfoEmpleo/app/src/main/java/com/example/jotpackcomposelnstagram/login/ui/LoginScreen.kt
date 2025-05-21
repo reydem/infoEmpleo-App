@@ -42,15 +42,21 @@ import androidx.compose.ui.unit.sp
 import com.example.jotpackcomposelnstagram.R
 
 @Composable
-fun LoginScreen(loginViewModel: LoginViewModel) {
+fun LoginScreen(
+    loginViewModel: LoginViewModel,
+    onLoginResult: (Boolean) -> Unit
+) {
+    // Observamos estado y credenciales para habilitar el botón
+    val isLoading: Boolean by loginViewModel.isLoading.observeAsState(initial = false)
+    val email: String        by loginViewModel.email.observeAsState(initial = "")
+    val password: String     by loginViewModel.password.observeAsState(initial = "")
+    val isLoginEnable: Boolean by loginViewModel.isLoginEnable.observeAsState(initial = false)
+
     Box(
         Modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
-
-        val isLoading: Boolean by loginViewModel.isLoading.observeAsState(initial = false)
-
         if (isLoading) {
             Box(
                 Modifier
@@ -61,11 +67,20 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
             }
         } else {
             Header(Modifier.align(Alignment.TopEnd))
-            Body(Modifier.align(Alignment.Center), loginViewModel)
+            Body(
+                modifier = Modifier.align(Alignment.Center),
+                loginViewModel = loginViewModel,
+                isLoginEnable = isLoginEnable,
+                onLoginResult = onLoginResult
+            )
+
+
+
             Footer(Modifier.align(Alignment.BottomCenter))
         }
     }
 }
+
 
 @Composable
 fun Footer(modifier: Modifier) {
@@ -106,30 +121,72 @@ fun SignUp() {
 
 
 @Composable
-fun Body(modifier: Modifier, loginViewModel: LoginViewModel) {
-    val email:String by loginViewModel.email.observeAsState(initial = "")
-    val password:String by loginViewModel.password.observeAsState(initial = "")
-    val isLoginEnable:Boolean by loginViewModel.isLoginEnable.observeAsState(initial = false)
+fun Body(
+    modifier: Modifier,
+    loginViewModel: LoginViewModel,
+    isLoginEnable: Boolean,
+    onLoginResult: (Boolean) -> Unit
+) {
+    val email: String    by loginViewModel.email.observeAsState("")
+    val password: String by loginViewModel.password.observeAsState("")
+
     Column(modifier = modifier) {
         ImageLogo(Modifier.align(Alignment.CenterHorizontally))
-        Spacer(modifier = Modifier.size(16.dp))
+        Spacer(Modifier.size(16.dp))
+
         Email(email) {
-            loginViewModel.onLoginChanged(email = it, password = password)
+            loginViewModel.onLoginChanged(it, password)
         }
-        Spacer(modifier = Modifier.size(4.dp))
+        Spacer(Modifier.size(4.dp))
+
         Password(password) {
-            loginViewModel.onLoginChanged(email = email, password = it)
+            loginViewModel.onLoginChanged(email, it)
         }
-        Spacer(modifier = Modifier.size(8.dp))
+        Spacer(Modifier.size(8.dp))
+
         ForgotPassword(Modifier.align(Alignment.End))
-        Spacer(modifier = Modifier.size(16.dp))
-        LoginButton(isLoginEnable, loginViewModel)
-        Spacer(modifier = Modifier.size(16.dp))
+        Spacer(Modifier.size(16.dp))
+
+        // Aquí se modifica: llamamos al ViewModel con callback y propagamos el resultado
+        LoginButton(
+            loginEnable = isLoginEnable,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            loginViewModel.onLoginSelected { success ->
+                onLoginResult(success)
+            }
+        }
+
+
+        Spacer(Modifier.size(16.dp))
         LoginDivider()
-        Spacer(modifier = Modifier.size(32.dp))
+        Spacer(Modifier.size(32.dp))
         SocialLogin()
     }
 }
+
+@Composable
+fun LoginButton(
+    loginEnable: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        enabled = loginEnable,
+        modifier = modifier.fillMaxWidth(),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF4EA8E9),
+            disabledContainerColor = Color(0xFF78C8F9),
+            contentColor = Color.White,
+            disabledContentColor = Color.White
+        )
+    ) {
+        Text(text = "Log In")
+    }
+}
+
 
 @Composable
 fun SocialLogin() {
@@ -180,22 +237,6 @@ fun LoginDivider() {
 }
 
 
-@Composable
-fun LoginButton(loginEnable: Boolean, loginViewModel: LoginViewModel) {
-    Button(
-        onClick = { loginViewModel.onLoginSelected() },
-        enabled = loginEnable,
-        modifier = Modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF4EA8E9),
-            disabledContainerColor = Color(0xFF78C8F9),
-            contentColor = Color.White,
-            disabledContentColor = Color.White
-        )
-    ) {
-        Text(text = "Log In")
-    }
-}
 
 @SuppressLint("InvalidColorHexValue")
 @Composable
@@ -228,7 +269,7 @@ fun Password(password: String, onTextChanged: (String) -> Unit) {
         singleLine = true,
         maxLines = 1,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                trailingIcon = {
+        trailingIcon = {
             val imagen = if (passwordVisibility) {
                 Icons.Filled.VisibilityOff
             } else {

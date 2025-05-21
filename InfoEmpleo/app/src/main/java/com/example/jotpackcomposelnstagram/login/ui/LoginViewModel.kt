@@ -36,17 +36,20 @@ class LoginViewModel @Inject constructor(private val loginUseCase: LoginUseCase)
     fun enableLogin(email: String, password: String) =
         Patterns.EMAIL_ADDRESS.matcher(email).matches() && password.length > 6
 
-    fun onLoginSelected() {
+    fun onLoginSelected(onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
-            Log.i("aris", "entered onLoginSelected")  // <-- esto debe verse sí o sí
+            Log.i("aris", "entered onLoginSelected")
             _isLoading.value = true
-            val result = loginUseCase(email.value!!, password.value!!)
-            if (result) {
-                Log.i("aris", "result OK")
-            } else {
-                Log.i("aris", "login failed")  // <-- útil para saber si entra pero no pasa el if
-            }
+
+            // Llamamos al caso de uso que ahora devuelve LoginResponse?
+            val loginResp = loginUseCase(email.value!!, password.value!!)
+            // Éxito si viene token
+            val success = loginResp?.token != null
+
+            Log.i("aris", if (success) "result OK" else "login failed")
+            onResult(success)
             _isLoading.value = false
         }
     }
+
 }

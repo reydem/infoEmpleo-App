@@ -1,6 +1,5 @@
 package com.example.jotpackcomposelnstagram.core.di
 
-
 import com.example.jotpackcomposelnstagram.login.data.network.LoginClient
 import dagger.Module
 import dagger.Provides
@@ -12,20 +11,15 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class NetworkModule {
+object NetworkModule {
 
-    @Singleton
-    @Provides
-    fun provideRetrofit():Retrofit{
-        return Retrofit.Builder()
-            .baseUrl("https://run.mocky.io/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
+    @Provides @Singleton
+    fun provideRetrofit(): Retrofit = Retrofit.Builder()
+        .baseUrl("http://10.0.2.2:5000/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
 
-    @Singleton
-    @Provides
-    fun provideLoginClient(retrofit: Retrofit):LoginClient{
-        return retrofit.create(LoginClient::class.java)
-    }
+    @Provides @Singleton
+    fun provideLoginClient(retrofit: Retrofit): LoginClient =
+        retrofit.create(LoginClient::class.java)
 }
