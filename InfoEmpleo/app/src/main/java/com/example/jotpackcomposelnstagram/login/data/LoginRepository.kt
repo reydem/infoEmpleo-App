@@ -1,0 +1,9 @@
+package com.example.jotpackcomposelnstagram.login.data.network
+
+import javax.inject.Inject
+
+class LoginRepository @Inject constructor(private val api:LoginService) {
+       suspend fun doLogin(user:String, password:String):Boolean{
+        return api.doLogin(user, password)
+    }
+}
