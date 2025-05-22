@@ -5,12 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -20,7 +18,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.jotpackcomposelnstagram.login.ui.HomeScreen
+import com.example.jotpackcomposelnstagram.addtasks.ui.TasksScreen
+import com.example.jotpackcomposelnstagram.addtasks.ui.TasksViewModel
 import com.example.jotpackcomposelnstagram.login.ui.LoginScreen
 import com.example.jotpackcomposelnstagram.login.ui.LoginViewModel
 import com.example.jotpackcomposelnstagram.ui.theme.JotpackComposelnstagramTheme
@@ -28,6 +27,7 @@ import com.example.jotpackcomposelnstagram.ui.theme.JotpackComposelnstagramTheme
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    private val tasksViewModel: TasksViewModel by viewModels()
     private val loginViewModel: LoginViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
                                              fontWeight = FontWeight.Bold,
                                              modifier = Modifier.padding(bottom = 16.dp)
                                                  )
-                                     HomeScreen()  // aquí inyectamos el ViewModel y mostramos la UI
+                                     TasksScreen(tasksViewModel)  // aquí inyectamos el ViewModel y mostramos la UI
                                  }
                          }
                 }
