@@ -2,9 +2,7 @@ package com.example.jotpackcomposelnstagram.addtasks.ui
 
 
 
-import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.DefaultTab.AlbumsTab.value
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,23 +24,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.*
 
-import androidx.compose.foundation.lazy.LazyColumn
-
 import androidx.compose.material3.*
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.tooling.preview.Preview
 
-@Preview
+
 @Composable
-fun TasksScreen() {
+fun TasksScreen(tasksViewModel: TasksViewModel) {
     Box(modifier = Modifier.fillMaxSize()) {
         AddTasksDialog(true, onDismiss ={}, onTaskAdded = {})
         FabDialog(Modifier.align(Alignment.BottomEnd))

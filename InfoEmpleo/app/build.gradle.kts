@@ -79,5 +79,9 @@ dependencies {
     //Dagger Hilt
     implementation (libs.hilt.android.v241)
     kapt (libs.hilt.android.compiler.v241)
+    //LiveData
+    implementation (libs.androidx.lifecycle.runtime.ktx.v231)
+    implementation (libs.androidx.runtime.livedata.v121)
+
 
 }
