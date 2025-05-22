@@ -125,6 +125,7 @@ fun AddTasksDialog(show: Boolean, onDismiss: () -> Unit, onTaskAdded: (String) -
                 Button(
                     onClick = {
                         onTaskAdded(myTask)
+                        myTask =""
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {

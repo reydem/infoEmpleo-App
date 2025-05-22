@@ -26,7 +26,7 @@ class TasksViewModel @Inject constructor():ViewModel() {
     fun onTasksCreated(task: String) {
         _showDialog.value = false
         // pasamos explicitamente selected = false
-        _tasks.add(TaskModel(task = task, selected = true))
+        _tasks.add(TaskModel(task = task, selected = false))
     }
 
 
