@@ -20,7 +20,6 @@ class TasksViewModel @Inject constructor():ViewModel() {
     fun onTasksCreated(task: String) {
         _showDialog.value = false
         Log.i("Erik",task )
-
     }
 
     fun onShowDialogClick() {
