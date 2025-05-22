@@ -71,7 +71,11 @@ fun ItemTask(taskModel: TaskModel, tasksViewModel: TasksViewModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp).pointerInput(Unit){
+                detectTapGestures(onLongPress = {
+                    tasksViewModel.onItemRemove(taskModel)
+                })
+            },
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {

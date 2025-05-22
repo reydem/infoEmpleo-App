@@ -41,7 +41,8 @@ class TasksViewModel @Inject constructor():ViewModel() {
         }
     }
 
-
+    fun onItemRemove(taskModel: TaskModel) {
+        _tasks.remove(taskModel)
+    }
 }
 
-//Log.i("Erik",task )
