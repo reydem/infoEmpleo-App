@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.kotlin.compose)               
     alias(libs.plugins.hilt.android.gradle.plugin)
+    id("kotlin-kapt")
+    id("dagger.hilt.android.plugin")
 }
 android {
     namespace = "com.example.jotpackcomposelnstagram"
@@ -74,4 +76,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.hilt.navigation.compose)
+    //Dagger Hilt
+    implementation (libs.hilt.android.v241)
+    kapt (libs.hilt.android.compiler.v241)
+
 }

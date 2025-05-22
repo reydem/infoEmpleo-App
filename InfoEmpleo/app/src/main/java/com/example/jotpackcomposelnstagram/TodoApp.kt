@@ -4,5 +4,4 @@ import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 
 
-class JetpackComposeApp:Application() {
-}
+class TodoApp:Application()
