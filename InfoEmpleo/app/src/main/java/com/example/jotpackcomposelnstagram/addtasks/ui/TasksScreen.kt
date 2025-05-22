@@ -55,10 +55,10 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
 
 @Composable
 fun TasksList(tasksViewModel: TasksViewModel) {
-    val myTasks: List<TaskModel> = emptyList()
+    val myTasks: List<TaskModel> = tasksViewModel.task
 
     LazyColumn {
-        items(myTasks) { task ->
+        items(myTasks, key = { it.id }) { task ->
             ItemTask(task, tasksViewModel)
         }
     }
