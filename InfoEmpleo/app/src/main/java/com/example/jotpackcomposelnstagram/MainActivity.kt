@@ -64,12 +64,7 @@ class MainActivity : ComponentActivity() {
                                                  .padding(top = 50.dp),
                                      horizontalAlignment = Alignment.CenterHorizontally
                                          ) {
-                                     Text(
-                                             text = "¡Bienvenido de nuevo!",
-                                             fontSize = 24.sp,
-                                             fontWeight = FontWeight.Bold,
-                                             modifier = Modifier.padding(bottom = 16.dp)
-                                                 )
+
 //                                     TasksScreen(tasksViewModel)
                                  TasksScreen()
                              }
