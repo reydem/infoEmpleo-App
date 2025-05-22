@@ -64,10 +64,12 @@ fun AddTasksDialog(show: Boolean, onDismiss: () -> Unit) {
     var myTask by remember { mutableStateOf("") }
     if (show) {
         Dialog(onDismissRequest = { onDismiss() }) {
-            Column(Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(16.dp)) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(16.dp)
+            ) {
                 Text(
                     text = "Añade tu tarea",
                     fontSize = 18.sp,
@@ -75,7 +77,12 @@ fun AddTasksDialog(show: Boolean, onDismiss: () -> Unit) {
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.size(16.dp))
-                TextField(value = myTask, onValueChange = { myTask = it })
+                TextField(
+                    value = myTask,
+                    onValueChange = { myTask = it },
+                    singleLine = true,
+                    maxLines = 1
+                )
                 Spacer(modifier = Modifier.size(16.dp))
                 Button(
                     onClick = {
