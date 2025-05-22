@@ -25,6 +25,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.*
+
 import androidx.compose.foundation.lazy.LazyColumn
 
 import androidx.compose.material3.*
@@ -63,8 +64,16 @@ fun AddTasksDialog(show: Boolean, onDismiss: () -> Unit) {
     var myTask by remember { mutableStateOf("") }
     if (show) {
         Dialog(onDismissRequest = { onDismiss() }) {
-            Column(Modifier.fillMaxWidth().background(Color.White)) {
-                Text(text = "Añade tu tarea", fontSize = 16.sp)
+            Column(Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(16.dp)) {
+                Text(
+                    text = "Añade tu tarea",
+                    fontSize = 18.sp,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    fontWeight = FontWeight.Bold
+                )
                 Spacer(modifier = Modifier.size(16.dp))
                 TextField(value = myTask, onValueChange = { myTask = it })
                 Spacer(modifier = Modifier.size(16.dp))
