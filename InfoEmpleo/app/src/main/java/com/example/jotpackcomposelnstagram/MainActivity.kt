@@ -70,8 +70,9 @@ class MainActivity : ComponentActivity() {
                                              fontWeight = FontWeight.Bold,
                                              modifier = Modifier.padding(bottom = 16.dp)
                                                  )
-                                     TasksScreen(tasksViewModel)  // aquí inyectamos el ViewModel y mostramos la UI
-                                 }
+//                                     TasksScreen(tasksViewModel)
+                                 TasksScreen()
+                             }
                          }
                 }
             }
