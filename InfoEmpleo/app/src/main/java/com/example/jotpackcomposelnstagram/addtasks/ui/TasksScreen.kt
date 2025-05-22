@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -32,13 +33,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.jotpackcomposelnstagram.addtasks.ui.model.TaskModel
 
 
 @Composable
 fun TasksScreen(tasksViewModel: TasksViewModel) {
     val showDialog: Boolean by tasksViewModel.showDialog.observeAsState(false)
-    Box(modifier = Modifier.fillMaxSize().padding(20.dp)) {
-        ItemTask()
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .padding(20.dp)) {
+
         AddTasksDialog(
             showDialog,
             onDismiss = { tasksViewModel.onDialogClose() },
@@ -51,14 +55,19 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
 
 @Composable
 fun TasksList(tasksViewModel: TasksViewModel) {
-    LazyColumn {
+    val myTasks: List<TaskModel> = emptyList()
 
+    LazyColumn {
+        items(myTasks) { task ->
+            ItemTask(task, tasksViewModel)
+        }
     }
 }
 
-@Preview
+
+
 @Composable
-fun ItemTask( ) {
+fun ItemTask(taskModel: TaskModel, tasksViewModel: TasksViewModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -67,14 +76,14 @@ fun ItemTask( ) {
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "Ejemplo",
+                text = taskModel.task,
                 modifier = Modifier
                     .padding(horizontal = 4.dp)
                     .weight(1f)
             )
             Checkbox(
-                checked = true,
-                onCheckedChange = {  })
+                checked = taskModel.selected,
+                onCheckedChange = { tasksViewModel.onCheckBoxSelected(taskModel) })
         }
     }
 }

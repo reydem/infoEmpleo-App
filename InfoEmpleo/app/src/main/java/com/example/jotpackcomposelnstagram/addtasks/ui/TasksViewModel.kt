@@ -26,4 +26,8 @@ class TasksViewModel @Inject constructor():ViewModel() {
         _showDialog.value = true
     }
 
+    fun onCheckBoxSelected(taskModel: TaskModel) {
+
+    }
+
 }
