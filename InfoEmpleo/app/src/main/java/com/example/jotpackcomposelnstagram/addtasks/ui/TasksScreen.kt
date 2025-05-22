@@ -3,6 +3,7 @@ package com.example.jotpackcomposelnstagram.addtasks.ui
 
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +29,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 
@@ -53,19 +55,27 @@ fun TasksList(tasksViewModel: TasksViewModel) {
 
     }
 }
+
 @Preview
 @Composable
-fun ItemTask() {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = "Ejemplo",
-            modifier = Modifier
-                .padding(horizontal = 4.dp)
-                .weight(1f)
-        )
-        Checkbox(
-            checked = true,
-            onCheckedChange = { })
+fun ItemTask( ) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "Ejemplo",
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .weight(1f)
+            )
+            Checkbox(
+                checked = true,
+                onCheckedChange = {  })
+        }
     }
 }
 
