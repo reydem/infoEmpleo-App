@@ -43,21 +43,12 @@ class TasksViewModel @Inject constructor(
         _showDialog.value = false
     }
 
-    fun onTasksCreated(task: String) {
-        _showDialog.value = false
-        viewModelScope.launch {
-            addTaskUseCase(
-                TaskModel(
-                    id          = System.currentTimeMillis().hashCode(),
-                    title       = task,
-                    description = "",      // o un valor por defecto
-                    salary      = 0.0,     // o un valor por defecto
-                    imageUrl    = null,    // si no tienes URL aún
-                    selected    = false
-                )
-            )
-        }
-    }
+     fun onTasksCreated(taskModel: TaskModel) {
+     _showDialog.value = false
+     viewModelScope.launch {
+         addTaskUseCase(taskModel)
+     }
+ }
 
 
     fun onShowDialogClick() {
