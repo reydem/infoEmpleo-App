@@ -177,8 +177,8 @@ fun LoginButton(
         enabled = loginEnable,
         modifier = modifier.fillMaxWidth(),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF4EA8E9),
-            disabledContainerColor = Color(0xFF78C8F9),
+            containerColor = Color.Black,
+            disabledContainerColor = Color.Gray,
             contentColor = Color.White,
             disabledContentColor = Color.White
         )
