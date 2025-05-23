@@ -8,11 +8,11 @@ plugins {
     id("dagger.hilt.android.plugin")
 }
 android {
-    namespace = "com.example.jotpackcomposelnstagram"
+    namespace = "com.example.infoempleo"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.jotpackcomposelnstagram"
+        applicationId = "com.example.infoempleo"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
