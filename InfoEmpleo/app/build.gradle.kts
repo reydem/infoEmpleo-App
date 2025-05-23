@@ -88,6 +88,12 @@ dependencies {
     kapt ("androidx.room:room-compiler:2.7.1")
     implementation (libs.androidx.room.ktx)
 
+    // Retrofit para llamadas HTTP y mapeo JSON
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    // Opcional: interceptor para logging de peticiones/respuestas
+    implementation(libs.logging.interceptor)
+
 
 
 }
