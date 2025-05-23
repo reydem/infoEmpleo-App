@@ -94,7 +94,9 @@ dependencies {
     // Opcional: interceptor para logging de peticiones/respuestas
     implementation(libs.logging.interceptor)
 
+    // para cargar imágenes en Compose
     implementation(libs.coil.compose)
+
 
 
 }

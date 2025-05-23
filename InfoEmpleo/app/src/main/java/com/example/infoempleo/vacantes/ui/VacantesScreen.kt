@@ -1,3 +1,4 @@
+// /webapps/infoEmpleo-App-android/InfoEmpleo/app/src/main/java/com/example/infoempleo/vacantes/ui/VacantesScreen.kt
 package com.example.infoempleo.vacantes.ui
 
 import androidx.compose.foundation.layout.Column
@@ -16,16 +17,37 @@ import androidx.compose.ui.unit.dp
 import com.example.infoempleo.vacantes.data.network.VacanteDto
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.text.style.TextOverflow
+import coil.compose.AsyncImage
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+
 
 @Composable
 fun VacantesScreen(vm: VacantesViewModel) {
     val uiState by vm.vacantesUiState.collectAsState()
 
     when (uiState) {
-        is VacantesUiState.Loading -> CircularProgressIndicator()
-        is VacantesUiState.Error   -> Text("Error: ${(uiState as VacantesUiState.Error).error}")
+        is VacantesUiState.Loading -> {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+
+        is VacantesUiState.Error -> {
+            Text(
+                text = "Error: ${(uiState as VacantesUiState.Error).error.message}",
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
         is VacantesUiState.Success -> {
-            LazyColumn {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items((uiState as VacantesUiState.Success).vacantes) { vac ->
                     ItemVacante(vac)
                 }
@@ -36,13 +58,50 @@ fun VacantesScreen(vm: VacantesViewModel) {
 
 @Composable
 fun ItemVacante(v: VacanteDto) {
-    Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
         Column(Modifier.padding(16.dp)) {
+            // Título
             Text(text = v.titulo, fontWeight = FontWeight.Bold)
-            Text(text = v.descripcion, maxLines = 2, overflow = TextOverflow.Ellipsis)
+
+            Spacer(Modifier.height(8.dp))
+
+            // Imagen (si existe)
+            v.imagenUrl?.let { url ->
+                AsyncImage(
+                    model = url,
+                    contentDescription = "Logo de ${v.titulo}",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+
+            // Descripción
+            Text(
+                text = v.descripcion,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            // Salario, reclutador y postulantes
             Text(text = "Salario: \$${v.salarioOfrecido}")
-            // si quieres mostrar la imagen:
-            // AsyncImage(model = "http://10.0.2.2:5000/${v.imagenEmpresa}", contentDescription = null)
+            Text(text = "Reclutador: ${v.reclutador}")
+            Text(text = "Postulantes: ${v.postulantes.size}")
+
+            Spacer(Modifier.height(8.dp))
+
+            // Fechas
+            Text(text = "Creada: ${v.createdAt.take(10)}")
+            Text(text = "Actualizada: ${v.updatedAt.take(10)}")
         }
     }
 }

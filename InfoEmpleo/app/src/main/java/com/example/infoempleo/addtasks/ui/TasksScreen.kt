@@ -36,6 +36,12 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.infoempleo.addtasks.ui.model.TaskModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
+import coil.compose.AsyncImage
+
+
 
 
 @Composable
@@ -92,36 +98,56 @@ fun ItemTask(taskModel: TaskModel, tasksViewModel: TasksViewModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .pointerInput(Unit) {
-                detectTapGestures(onLongPress = {
-                    tasksViewModel.onItemRemove(taskModel)
-                })
-            },
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.padding(16.dp)) {
+
+            // 1) Imagen (si existe)
+            taskModel.imageUrl?.let { url ->
+                AsyncImage(
+                    model = url,
+                    contentDescription = "Logo de ${taskModel.title}",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+
+            // 2) Texto principal
+            Text(text = taskModel.title, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(4.dp))
+
+            // 3) Descripción
             Text(
-                text = taskModel.task,
-                modifier = Modifier
-                    .padding(horizontal = 4.dp)
-                    .weight(1f)
+                text = taskModel.description,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
-            Checkbox(
-                checked = taskModel.selected,
-                onCheckedChange = { tasksViewModel.onCheckBoxSelected(taskModel) })
+            Spacer(Modifier.height(4.dp))
+
+            // 4) Salario
+            Text(text = "Salario: \$${taskModel.salary}")
+
+            Spacer(Modifier.height(8.dp))
+
+            // 5) Checkbox alineado a la derecha
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Spacer(Modifier.weight(1f))
+                Checkbox(
+                    checked = taskModel.selected,
+                    onCheckedChange = { tasksViewModel.onCheckBoxSelected(taskModel) }
+                )
+            }
         }
     }
 }
 
-@Composable
-fun FabDialog(modifier: Modifier, tasksViewModel: TasksViewModel) {
-    FloatingActionButton(onClick = {
-        tasksViewModel.onShowDialogClick()
-    }, modifier = modifier) {
-        Icon(Icons.Filled.Add, contentDescription = "")
-    }
-}
 
 @Composable
 fun AddTasksDialog(show: Boolean, onDismiss: () -> Unit, onTaskAdded: (String) -> Unit) {
@@ -167,5 +193,20 @@ fun AddTasksDialog(show: Boolean, onDismiss: () -> Unit, onTaskAdded: (String) -
                 }
             }
         }
+    }
+}
+@Composable
+fun FabDialog(
+    modifier: Modifier,
+    tasksViewModel: TasksViewModel
+) {
+    FloatingActionButton(
+        onClick = { tasksViewModel.onShowDialogClick() },
+        modifier = modifier
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Add,
+            contentDescription = "Añadir"
+        )
     }
 }

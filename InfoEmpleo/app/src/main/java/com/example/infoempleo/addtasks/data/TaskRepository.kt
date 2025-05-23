@@ -14,15 +14,18 @@ class TaskRepository @Inject constructor(
 ) {
 
     val tasks: Flow<List<TaskModel>> = flow {
-        val listaVacantes = vacantesApi.getTodasLasVacantes()
-        emit(listaVacantes.map { dto ->
-            TaskModel(
-                id       = dto.id.hashCode(),
-                task     = dto.titulo,
-                selected = false
-            )
-        })
-    }
+  val listaVac = vacantesApi.getTodasLasVacantes()
+  emit(listaVac.map { dto ->
+    TaskModel(
+      id          = dto.id.hashCode(),
+      title       = dto.titulo,
+      description = dto.descripcion,
+      salary      = dto.salarioOfrecido,
+      imageUrl    = dto.imagenUrl,    // la propiedad calculada que añadiste
+      selected    = false
+    )
+  })
+}
 
     // <-- Estos métodos evitan el "Unresolved reference" en tus UseCase
     suspend fun add(taskModel: TaskModel) {
