@@ -93,7 +93,8 @@ fun ItemTask(taskModel: TaskModel, tasksViewModel: TasksViewModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp).pointerInput(Unit){
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .pointerInput(Unit) {
                 detectTapGestures(onLongPress = {
                     tasksViewModel.onItemRemove(taskModel)
                 })
@@ -135,7 +136,7 @@ fun AddTasksDialog(show: Boolean, onDismiss: () -> Unit, onTaskAdded: (String) -
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Añade tu tarea",
+                    text = "Añadir empleo",
                     fontSize = 18.sp,
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     fontWeight = FontWeight.Bold
@@ -149,13 +150,21 @@ fun AddTasksDialog(show: Boolean, onDismiss: () -> Unit, onTaskAdded: (String) -
                 )
                 Spacer(modifier = Modifier.size(16.dp))
                 Button(
+
                     onClick = {
                         onTaskAdded(myTask)
-                        myTask =""
+                        myTask = ""
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        disabledContainerColor = Color.Gray,
+                        contentColor = Color.White,
+                        disabledContentColor = Color.White
+                    )
+
                 ) {
-                    Text(text = "Añadir tarea")
+                    Text(text = "Añade empleo")
                 }
             }
         }

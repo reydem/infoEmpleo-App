@@ -183,7 +183,7 @@ fun LoginButton(
             disabledContentColor = Color.White
         )
     ) {
-        Text(text = "Log In")
+        Text(text = "Iniciar sesion")
     }
 }
 
@@ -197,11 +197,11 @@ fun SocialLogin() {
     ) {
         Image(
             painter = painterResource(id = R.drawable.fb),
-            contentDescription = "Social login fb",
+            contentDescription = "Social login Facebook",
             modifier = Modifier.size(16.dp)
         )
         Text(
-            text = "Continue as Aris",
+            text = "Continue con Facebook",
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 8.dp),
