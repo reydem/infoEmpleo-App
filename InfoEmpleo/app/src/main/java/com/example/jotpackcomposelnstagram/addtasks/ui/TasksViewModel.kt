@@ -5,12 +5,30 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.jotpackcomposelnstagram.addtasks.domain.AddTaskUseCase
+import com.example.jotpackcomposelnstagram.addtasks.domain.*
+import com.example.jotpackcomposelnstagram.addtasks.ui.TasksUiState.*
 import com.example.jotpackcomposelnstagram.addtasks.ui.model.TaskModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
+@HiltViewModel
+class TasksViewModel @Inject constructor(
+    private val addTaskUseCase: AddTaskUseCase,
+    getTasksUseCase: GetTasksUseCase
+) : ViewModel() {
 
-class TasksViewModel @Inject constructor():ViewModel() {
+    val uiState: StateFlow<TasksUiState> = getTasksUseCase()
+        .map(::Success)
+        .catch { Error(it) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), Loading)
+
 
     private val _showDialog = MutableLiveData<Boolean>()
     val showDialog: LiveData<Boolean> = _showDialog
@@ -25,10 +43,12 @@ class TasksViewModel @Inject constructor():ViewModel() {
 
     fun onTasksCreated(task: String) {
         _showDialog.value = false
-        // pasamos explicitamente selected = false
-        _tasks.add(TaskModel(task = task, selected = false))
-    }
+//        _tasks.add(TaskModel(task = task))
 
+        viewModelScope.launch {
+            addTaskUseCase(TaskModel(task = task, selected = true))
+        }
+    }
 
     fun onShowDialogClick() {
         _showDialog.value = true
