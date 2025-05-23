@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "JotpackComposelnstagram"
+rootProject.name = "InfoEmpleo"
 include(":app")
  
