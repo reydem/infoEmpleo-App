@@ -67,6 +67,7 @@ dependencies {
             module = "navigation-compose-jvmstubs"
         )
     }
+    implementation(libs.androidx.room.common.jvm)
     kapt(libs.hilt.android.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class TasksViewModel @Inject constructor(
     private val addTaskUseCase: AddTaskUseCase,
+    private val updateTaskUseCase: UpdateTaskUseCase,
     getTasksUseCase: GetTasksUseCase
 ) : ViewModel() {
 
@@ -46,7 +47,7 @@ class TasksViewModel @Inject constructor(
 //        _tasks.add(TaskModel(task = task))
 
         viewModelScope.launch {
-            addTaskUseCase(TaskModel(task = task, selected = true))
+            addTaskUseCase(TaskModel(task = task))
         }
     }
 
@@ -55,11 +56,9 @@ class TasksViewModel @Inject constructor(
     }
 
     fun onCheckBoxSelected(taskModel: TaskModel) {
-//        Actualizar
-//        val index = _tasks.indexOf(taskModel)
-//        _tasks[index] = _tasks[index].let {
-//            it.copy(selected = !it.selected)
-//        }
+        viewModelScope.launch {
+            updateTaskUseCase(taskModel.copy(selected = !taskModel.selected))
+        }
     }
 
     fun onItemRemove(taskModel: TaskModel) {
