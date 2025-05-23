@@ -94,6 +94,7 @@ dependencies {
     // Opcional: interceptor para logging de peticiones/respuestas
     implementation(libs.logging.interceptor)
 
+    implementation(libs.coil.compose)
 
 
 }
