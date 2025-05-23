@@ -39,46 +39,76 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
-
-
-
 
 @Composable
 fun TasksScreen(tasksViewModel: TasksViewModel) {
     val showDialog: Boolean by tasksViewModel.showDialog.observeAsState(false)
     val lifecycle = LocalLifecycleOwner.current.lifecycle
 
+    // Recogemos el estado de la UI
     val uiState by produceState<TasksUiState>(
         initialValue = TasksUiState.Loading,
         key1 = lifecycle,
         key2 = tasksViewModel
-    ){
-        lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED){
-            tasksViewModel.uiState.collect{ value = it}
+    ) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            tasksViewModel.uiState.collect { value = it }
         }
     }
 
-    when(uiState){
-        is TasksUiState.Error -> {}
-        TasksUiState.Loading -> { CircularProgressIndicator() }
+    // Manejamos Loading / Error / Success
+    when (uiState) {
+        is TasksUiState.Loading -> {
+            Box(
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        is TasksUiState.Error -> {
+            Box(
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Error cargando vacantes")
+            }
+        }
         is TasksUiState.Success -> {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp)) {
+            Box(Modifier.fillMaxSize()) {
+                // 1) Lista de items
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(20.dp)
+                ) {
+                    items((uiState as TasksUiState.Success).tasks, key = { it.id }) { task ->
+                        ItemTask(task, tasksViewModel)
+                    }
+                }
 
+                // 2) Diálogo de Añadir (se superpone a la lista)
                 AddTasksDialog(
-                    showDialog,
+                    show = showDialog,
                     onDismiss = { tasksViewModel.onDialogClose() },
-                    onTaskAdded = { tasksViewModel.onTasksCreated(it) })
-                FabDialog(Modifier.align(Alignment.BottomEnd), tasksViewModel)
-                TasksList((uiState as TasksUiState.Success).tasks, tasksViewModel)
+                    onTaskAdded = { tasksViewModel.onTasksCreated(it) }
+                )
 
+                // 3) FAB siempre por encima de todo
+                FloatingActionButton(
+                    onClick = { tasksViewModel.onShowDialogClick() },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                        .zIndex(1f)
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = "Añadir vacante")
+                }
             }
         }
     }
-
-
 }
 
 @Composable
@@ -90,8 +120,6 @@ fun TasksList(tasks: List<TaskModel>, tasksViewModel: TasksViewModel) {
         }
     }
 }
-
-
 
 @Composable
 fun ItemTask(taskModel: TaskModel, tasksViewModel: TasksViewModel) {
@@ -148,7 +176,6 @@ fun ItemTask(taskModel: TaskModel, tasksViewModel: TasksViewModel) {
     }
 }
 
-
 @Composable
 fun AddTasksDialog(show: Boolean, onDismiss: () -> Unit, onTaskAdded: (String) -> Unit) {
     var myTask by remember { mutableStateOf("") }
@@ -195,6 +222,7 @@ fun AddTasksDialog(show: Boolean, onDismiss: () -> Unit, onTaskAdded: (String) -
         }
     }
 }
+
 @Composable
 fun FabDialog(
     modifier: Modifier,
