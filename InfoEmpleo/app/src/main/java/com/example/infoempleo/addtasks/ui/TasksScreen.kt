@@ -105,13 +105,16 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
                         Text("Error cargando vacantes")
                     }
                 }
+
                 is TasksUiState.Success -> {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(20.dp)
                     ) {
-                        items((uiState as TasksUiState.Success).tasks, key = { it.id }) { task ->
+                        items(
+                            (uiState as TasksUiState.Success).tasks.asReversed(),
+                            key = { it.id }) { task ->
                             ItemTask(task, tasksViewModel)
                         }
                     }
