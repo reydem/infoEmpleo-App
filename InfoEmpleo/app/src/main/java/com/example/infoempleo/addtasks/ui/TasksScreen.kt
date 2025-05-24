@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.infoempleo.addtasks.ui.model.TaskModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,22 +46,20 @@ import androidx.compose.ui.text.input.KeyboardType
 fun TasksScreen(tasksViewModel: TasksViewModel) {
     // Estado del diálogo
     val showDialog by tasksViewModel.showDialog.observeAsState(false)
-    // Estado de errores (LiveData<String?> que debes exponer en tu VM)
+    // Estado de errores
     val errorMessage by tasksViewModel.errorMessage.observeAsState()
-    // Para el Snackbar
+    // Snackbar
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
-    // Mostrar Snackbar cuando errorMessage cambie a no-null
+    // Mostrar snackbar en cambios de errorMessage
     LaunchedEffect(errorMessage) {
         errorMessage?.let { msg ->
             snackbarHostState.showSnackbar(msg)
-            // opcional: una vez mostrado, limpiar el mensaje
             tasksViewModel.clearErrorMessage()
         }
     }
 
-    // Recoger el uiState desde el Flow del ViewModel
+    // Estado del UI
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val uiState by produceState<TasksUiState>(
         initialValue = TasksUiState.Loading,
@@ -69,59 +68,62 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
     ) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             tasksViewModel.uiState.collect { value = it }
-            value // para que el state se actualice
+            value
         }
     }
+
+    // Estado de scroll
+    val listState = rememberLazyListState()
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { tasksViewModel.onShowDialogClick() }
-            ) {
+            FloatingActionButton(onClick = { tasksViewModel.onShowDialogClick() }) {
                 Icon(Icons.Filled.Add, contentDescription = "Añadir vacante")
             }
         }
     ) { paddingValues ->
         Box(
-            modifier = Modifier
+            Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
             when (uiState) {
                 is TasksUiState.Loading -> {
-                    Box(
-                        Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 }
                 is TasksUiState.Error -> {
-                    Box(
-                        Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("Error cargando vacantes")
                     }
                 }
-
                 is TasksUiState.Success -> {
+                    // Lista invertida
+                    val tasks = (uiState as TasksUiState.Success).tasks.asReversed()
+
+                    // Hacer scroll a la primera vacante (índice 0) al cambiar la lista
+                    LaunchedEffect(tasks) {
+                        if (tasks.isNotEmpty()) {
+                            listState.animateScrollToItem(0)
+                        }
+                    }
+
                     LazyColumn(
+                        state = listState,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(20.dp)
                     ) {
-                        items(
-                            (uiState as TasksUiState.Success).tasks.asReversed(),
-                            key = { it.id }) { task ->
+                        items(tasks, key = { it.id }) { task ->
                             ItemTask(task, tasksViewModel)
                         }
                     }
                 }
             }
 
-            // Diálogo de añadir, siempre a mano pero solo visible si showDialog == true
+            // Diálogo de añadir
             AddTasksDialog(
                 show = showDialog,
                 onDismiss = { tasksViewModel.onDialogClose() },
@@ -132,7 +134,6 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
         }
     }
 }
-
 @Composable
 fun TasksList(tasks: List<TaskModel>, tasksViewModel: TasksViewModel) {
 
