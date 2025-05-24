@@ -3,8 +3,15 @@ package com.example.infoempleo.addtasks.data
 
 import com.example.infoempleo.addtasks.ui.model.TaskModel
 import com.example.infoempleo.vacantes.data.network.VacantesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,30 +20,105 @@ class TaskRepository @Inject constructor(
     private val vacantesApi: VacantesApi
 ) {
 
+    /**
+     * Obtiene todas las vacantes desde el servidor.
+     */
     val tasks: Flow<List<TaskModel>> = flow {
-  val listaVac = vacantesApi.getTodasLasVacantes()
-  emit(listaVac.map { dto ->
-    TaskModel(
-      id          = dto.id.hashCode(),
-      title       = dto.titulo,
-      description = dto.descripcion,
-      salary      = dto.salarioOfrecido,
-      imageUrl    = dto.imagenUrl,    // la propiedad calculada que añadiste
-      selected    = false
-    )
-  })
-}
-
-    // <-- Estos métodos evitan el "Unresolved reference" en tus UseCase
-    suspend fun add(taskModel: TaskModel) {
-        // aquí podrías llamar a vacantesApi.postular(taskModel.id.toString())
+        // Este bloque corre fuera del hilo principal por defecto,
+        // pero si necesitas asegurarte:
+        val listaVac = withContext(Dispatchers.IO) {
+            vacantesApi.getTodasLasVacantes()
+        }
+        emit(listaVac.map { dto ->
+            TaskModel(
+                id          = dto.id,
+                title       = dto.titulo,
+                description = dto.descripcion,
+                salary      = dto.salarioOfrecido,
+                imageUrl    = dto.imagenUrl,
+                selected    = false
+            )
+        })
     }
 
-    suspend fun update(taskModel: TaskModel) {
-        // aquí podrías llamar a vacantesApi.eliminarPostulacion(…)
+    /**
+     * Crea una nueva vacante en el servidor, opcionalmente con imagen.
+     */
+    suspend fun add(taskModel: TaskModel, imageFile: File? = null) {
+        withContext(Dispatchers.IO) {
+            val tituloRB = taskModel.title
+                .toRequestBody("text/plain".toMediaType())
+            val descripcionRB = taskModel.description
+                .toRequestBody("text/plain".toMediaType())
+            val salarioRB = taskModel.salary
+                .toString()
+                .toRequestBody("text/plain".toMediaType())
+
+            val imagenPart: MultipartBody.Part? = imageFile?.let { file ->
+                val reqFile = file
+                    .asRequestBody("image/*".toMediaType())
+                MultipartBody.Part.createFormData("imagen_empresa", file.name, reqFile)
+            }
+
+            val response = vacantesApi.createVacante(
+                titulo          = tituloRB,
+                descripcion     = descripcionRB,
+                salarioOfrecido = salarioRB,
+                imagen_empresa  = imagenPart
+            )
+
+            if (!response.isSuccessful) {
+                val errorBody = response.errorBody()?.string().orEmpty()
+                throw RuntimeException("Error creando vacante: ${response.code()} $errorBody")
+            }
+        }
     }
 
+    /**
+     * Actualiza una vacante existente en el servidor.
+     */
+    suspend fun update(taskModel: TaskModel, imageFile: File? = null) {
+        withContext(Dispatchers.IO) {
+            val tituloRB = taskModel.title
+                .toRequestBody("text/plain".toMediaType())
+            val descripcionRB = taskModel.description
+                .toRequestBody("text/plain".toMediaType())
+            val salarioRB = taskModel.salary
+                .toString()
+                .toRequestBody("text/plain".toMediaType())
+
+            val imagenPart: MultipartBody.Part? = imageFile?.let { file ->
+                val reqFile = file
+                    .asRequestBody("image/*".toMediaType())
+                MultipartBody.Part.createFormData("imagen_empresa", file.name, reqFile)
+            }
+
+            val response = vacantesApi.actualizarVacante(
+                id               = taskModel.id,
+                titulo           = tituloRB,
+                descripcion      = descripcionRB,
+                salarioOfrecido  = salarioRB,
+                imagen_empresa   = imagenPart
+            )
+
+            if (!response.isSuccessful) {
+                val errorBody = response.errorBody()?.string().orEmpty()
+                throw RuntimeException("Error actualizando vacante: ${response.code()} $errorBody")
+            }
+        }
+    }
+
+    /**
+     * Elimina una vacante en el servidor.
+     */
     suspend fun delete(taskModel: TaskModel) {
-        // y aquí la lógica para eliminar una vacante si existiera
+        withContext(Dispatchers.IO) {
+            val response = vacantesApi.eliminarVacante(taskModel.id)
+            if (!response.isSuccessful) {
+                val errorBody = response.errorBody()?.string().orEmpty()
+                throw RuntimeException("Error eliminando vacante: ${response.code()} $errorBody")
+            }
+        }
     }
 }
+

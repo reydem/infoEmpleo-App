@@ -40,12 +40,28 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.text.input.KeyboardType
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TasksScreen(tasksViewModel: TasksViewModel) {
-    val showDialog: Boolean by tasksViewModel.showDialog.observeAsState(false)
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    // Estado del diálogo
+    val showDialog by tasksViewModel.showDialog.observeAsState(false)
+    // Estado de errores (LiveData<String?> que debes exponer en tu VM)
+    val errorMessage by tasksViewModel.errorMessage.observeAsState()
+    // Para el Snackbar
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    // Recogemos el estado de la UI
+    // Mostrar Snackbar cuando errorMessage cambie a no-null
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { msg ->
+            snackbarHostState.showSnackbar(msg)
+            // opcional: una vez mostrado, limpiar el mensaje
+            tasksViewModel.clearErrorMessage()
+        }
+    }
+
+    // Recoger el uiState desde el Flow del ViewModel
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
     val uiState by produceState<TasksUiState>(
         initialValue = TasksUiState.Loading,
         key1 = lifecycle,
@@ -53,63 +69,66 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
     ) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             tasksViewModel.uiState.collect { value = it }
+            value // para que el state se actualice
         }
     }
 
-    when (uiState) {
-        is TasksUiState.Loading -> {
-            Box(
-                Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { tasksViewModel.onShowDialogClick() }
             ) {
-                CircularProgressIndicator()
+                Icon(Icons.Filled.Add, contentDescription = "Añadir vacante")
             }
         }
-        is TasksUiState.Error -> {
-            Box(
-                Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Error cargando vacantes")
-            }
-        }
-        is TasksUiState.Success -> {
-            Box(Modifier.fillMaxSize()) {
-                // 1) Lista de items
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp)
-                ) {
-                    items((uiState as TasksUiState.Success).tasks, key = { it.id }) { task ->
-                        ItemTask(task, tasksViewModel)
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (uiState) {
+                is TasksUiState.Loading -> {
+                    Box(
+                        Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
                 }
-
-                // 2) Diálogo de Añadir (se superpone a la lista)
-                AddTasksDialog(
-                    show       = showDialog,
-                    onDismiss  = { tasksViewModel.onDialogClose() },
-                    onVacanteAdded = { vacanteModel ->
-                        tasksViewModel.onTasksCreated(vacanteModel)
+                is TasksUiState.Error -> {
+                    Box(
+                        Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Error cargando vacantes")
                     }
-                )
-
-                // 3) FAB siempre por encima de todo
-                FloatingActionButton(
-                    onClick  = { tasksViewModel.onShowDialogClick() },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(16.dp)
-                        .zIndex(1f)
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Añadir vacante")
+                }
+                is TasksUiState.Success -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(20.dp)
+                    ) {
+                        items((uiState as TasksUiState.Success).tasks, key = { it.id }) { task ->
+                            ItemTask(task, tasksViewModel)
+                        }
+                    }
                 }
             }
+
+            // Diálogo de añadir, siempre a mano pero solo visible si showDialog == true
+            AddTasksDialog(
+                show = showDialog,
+                onDismiss = { tasksViewModel.onDialogClose() },
+                onVacanteAdded = { vacanteModel ->
+                    tasksViewModel.onTasksCreated(vacanteModel)
+                }
+            )
         }
     }
 }
-
 
 @Composable
 fun TasksList(tasks: List<TaskModel>, tasksViewModel: TasksViewModel) {
@@ -252,7 +271,7 @@ fun AddTasksDialog(
                         // Crear modelo y notificar
                         onVacanteAdded(
                             TaskModel(
-                                id = System.currentTimeMillis().hashCode(),
+                                id = System.currentTimeMillis().toString(),
                                 title = titulo.trim(),
                                 description = descripcion.trim(),
                                 salary = salario,

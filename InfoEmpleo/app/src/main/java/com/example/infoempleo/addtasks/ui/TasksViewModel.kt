@@ -1,22 +1,17 @@
+// /webapps/infoEmpleo-App-android/InfoEmpleo/app/src/main/java/com/example/infoempleo/addtasks/ui/TasksViewModel.kt
 package com.example.infoempleo.addtasks.ui
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.infoempleo.addtasks.domain.AddTaskUseCase
-import com.example.infoempleo.addtasks.domain.*
-import com.example.infoempleo.addtasks.ui.TasksUiState.*
+import com.example.infoempleo.addtasks.domain.DeleteTaskUseCase
+import com.example.infoempleo.addtasks.domain.GetTasksUseCase
+import com.example.infoempleo.addtasks.domain.UpdateTaskUseCase
 import com.example.infoempleo.addtasks.ui.model.TaskModel
+import com.example.infoempleo.addtasks.ui.TasksUiState.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import javax.inject.Inject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @HiltViewModel
 class TasksViewModel @Inject constructor(
@@ -26,45 +21,61 @@ class TasksViewModel @Inject constructor(
     getTasksUseCase: GetTasksUseCase
 ) : ViewModel() {
 
+    // Estado de la lista de vacantes
     val uiState: StateFlow<TasksUiState> = getTasksUseCase()
-        .map(::Success)
-        .catch { Error(it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), Loading)
+        .map { Success(it) as TasksUiState }
+        .catch { emit(Error(it)) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Loading)
 
-
-    private val _showDialog = MutableLiveData<Boolean>()
+    // Control de la visibilidad del diálogo
+    private val _showDialog = MutableLiveData(false)
     val showDialog: LiveData<Boolean> = _showDialog
 
-//    private val _tasks = mutableStateListOf<TaskModel>()
-//    val task: List<TaskModel> = _tasks
+    // Mensaje de error para mostrar en un Snackbar
+    private val _errorMessage = MutableLiveData<String?>()
+    val errorMessage: LiveData<String?> = _errorMessage
 
+    /** Limpia el mensaje de error tras mostrarlo */
+    fun clearErrorMessage() {
+        _errorMessage.value = null
+    }
 
+    /** Cierra el diálogo de añadir vacante */
     fun onDialogClose() {
         _showDialog.value = false
     }
 
-     fun onTasksCreated(taskModel: TaskModel) {
-     _showDialog.value = false
-     viewModelScope.launch {
-         addTaskUseCase(taskModel)
-     }
- }
-
-
+    /** Abre el diálogo de añadir vacante */
     fun onShowDialogClick() {
         _showDialog.value = true
     }
 
+    /**
+     * Maneja la creación de una nueva vacante.
+     * Captura errores de red y los expone en errorMessage.
+     */
+    fun onTasksCreated(taskModel: TaskModel) {
+        _showDialog.value = false
+        viewModelScope.launch {
+            runCatching {
+                addTaskUseCase(taskModel)
+            }.onFailure { throwable ->
+                _errorMessage.value = throwable.message ?: "Error creando vacante"
+            }
+        }
+    }
+
+    /** Marca o desmarca una vacante como seleccionada */
     fun onCheckBoxSelected(taskModel: TaskModel) {
         viewModelScope.launch {
             updateTaskUseCase(taskModel.copy(selected = !taskModel.selected))
         }
     }
 
+    /** Elimina una vacante */
     fun onItemRemove(taskModel: TaskModel) {
         viewModelScope.launch {
             deleteTaskUseCase(taskModel)
         }
     }
 }
-
