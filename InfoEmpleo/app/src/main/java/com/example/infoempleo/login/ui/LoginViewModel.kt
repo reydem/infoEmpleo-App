@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.infoempleo.login.domain.LoginUseCase
 import com.example.infoempleo.di.TokenPreferences
+import com.example.infoempleo.login.data.network.response.LoginResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -46,12 +47,15 @@ class LoginViewModel @Inject constructor(
             _isLoading.value = true
 
             // Ejecutamos el caso de uso
-            val loginResp = loginUseCase(email.value!!, password.value!!)
+            val loginResp: LoginResponse? = loginUseCase(email.value!!, password.value!!)  
             val success = loginResp?.token != null
 
-            if (success) {
+            if (success && loginResp != null && loginResp.usuario != null) {
                 // Guardamos el JWT para futuras peticiones
-                tokenPrefs.saveJwtToken(loginResp!!.token!!)
+                tokenPrefs.saveJwtToken(loginResp.token!!)
+                // Guardamos rol y correo
+                tokenPrefs.saveEsReclutador(loginResp.usuario.esReclutador)
+                tokenPrefs.saveCorreo(loginResp.usuario.correo ?: "")
             }
 
             Log.i("aris", if (success) "result OK" else "login failed")

@@ -42,6 +42,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import coil.compose.AsyncImage
+import com.example.infoempleo.login.di.LocalAuthState    // ← añadir
 
 import androidx.compose.material.icons.filled.Photo
 
@@ -49,6 +51,9 @@ import androidx.compose.material.icons.filled.Photo
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TasksScreen(tasksViewModel: TasksViewModel) {
+        // ← insertar aquí
+    // Recupera el estado de autenticación (reclutador / postulante)
+    val auth = LocalAuthState.current
     // Estado del diálogo
     val showDialog by tasksViewModel.showDialog.observeAsState(false)
     // Estado de errores
@@ -93,6 +98,25 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+                    // ← insertar aquí
+        // Mensaje simple según el rol
+        if (auth.esReclutador) {
+            Text(
+                text = "Bienvenido, reclutador",
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 16.dp),
+                style = MaterialTheme.typography.titleMedium
+            )
+        } else {
+            Text(
+                text = "Bienvenido, postulante",
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 16.dp),
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
             when (uiState) {
                 is TasksUiState.Loading -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
