@@ -100,12 +100,14 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
             // 1) saludo con zIndex para que quede por encima de la lista y del FAB
             Text(
                 text = if (auth.esReclutador) "Bienvenido, reclutador" else "Bienvenido, postulante",
+                
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 16.dp)
                     .zIndex(1f),
                 style = MaterialTheme.typography.titleMedium
             )
+
 
             when (uiState) {
                 is TasksUiState.Loading -> {

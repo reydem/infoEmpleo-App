@@ -2,6 +2,8 @@
 package com.example.infoempleo.login.di
 
 import com.example.infoempleo.di.TokenPreferences
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,15 +24,31 @@ data class AuthState(
 
 /**
  * Gestiona la sesión del usuario leyendo y escribiendo en TokenPreferences.
+ * Expone un flujo reactivo de AuthState para poder observar cambios en Compose.
  */
 @Singleton
 class SessionManager @Inject constructor(
     private val tokenPrefs: TokenPreferences
 ) {
+    // StateFlow interno con el estado de autenticación
+    private val _authState: MutableStateFlow<AuthState> =
+        MutableStateFlow(loadAuthState())
+
+    /** Flujo público que emite el estado de autenticación */
+    val authState: StateFlow<AuthState> = _authState
+
     /**
-     * Recupera el estado de autenticación actual.
+     * Recarga el estado de autenticación leyendo de TokenPreferences
+     * y notifica a todos los observadores.
      */
-    fun getAuthState(): AuthState {
+    fun updateAuthState() {
+        _authState.value = loadAuthState()
+    }
+
+    /**
+     * Lee las preferencias y construye un AuthState inicial o actualizado.
+     */
+    private fun loadAuthState(): AuthState {
         val token = tokenPrefs.getJwtToken().orEmpty()
         val isAuth = token.isNotBlank()
         val reclutador = tokenPrefs.isReclutador()
