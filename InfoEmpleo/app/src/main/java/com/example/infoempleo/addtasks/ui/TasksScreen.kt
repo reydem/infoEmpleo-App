@@ -39,6 +39,11 @@ import coil.compose.AsyncImage
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.input.KeyboardType
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
+import androidx.compose.material.icons.filled.Photo
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -127,8 +132,8 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
             AddTasksDialog(
                 show = showDialog,
                 onDismiss = { tasksViewModel.onDialogClose() },
-                onVacanteAdded = { vacanteModel ->
-                    tasksViewModel.onTasksCreated(vacanteModel)
+                onVacanteAdded = { vacanteModel, imageUri ->
+                    tasksViewModel.onTasksCreated(vacanteModel, imageUri)
                 }
             )
         }
@@ -203,15 +208,21 @@ fun ItemTask(taskModel: TaskModel, tasksViewModel: TasksViewModel) {
 fun AddTasksDialog(
     show: Boolean,
     onDismiss: () -> Unit,
-    onVacanteAdded: (TaskModel) -> Unit
+    onVacanteAdded: (TaskModel, Uri?) -> Unit
 ) {
     if (!show) return
 
-    // Estados locales para cada campo
     var titulo by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var salarioText by remember { mutableStateOf("") }
-    var imagenUrl by remember { mutableStateOf("") }
+
+    // Estado para la imagen
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        imageUri = uri
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -257,37 +268,55 @@ fun AddTasksDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(16.dp))
 
-                OutlinedTextField(
-                    value = imagenUrl,
-                    onValueChange = { imagenUrl = it },
-                    label = { Text("URL de la imagen") },
-                    singleLine = true,
+                // Selector de imagen
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
-                )
+                ) {
+                    IconButton(onClick = { pickImageLauncher.launch("image/*") }) {
+                        Icon(
+                            imageVector = Icons.Default.Photo,
+                            contentDescription = "Seleccionar imagen"
+                        )
+                    }
+                    Text(
+                        text = imageUri?.lastPathSegment ?: "Añadir foto de la empresa",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
+                // Vista previa de la imagen
+                imageUri?.let { uri ->
+                    Spacer(Modifier.height(8.dp))
+                    AsyncImage(
+                        model = uri,
+                        contentDescription = "Preview imagen",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                    )
+                }
                 Spacer(Modifier.height(16.dp))
 
                 Button(
                     onClick = {
-                        // Convertir el salario o dejar 0.0 si es inválido
                         val salario = salarioText.toDoubleOrNull() ?: 0.0
-                        // Crear modelo y notificar
-                        onVacanteAdded(
-                            TaskModel(
-                                id = System.currentTimeMillis().toString(),
-                                title = titulo.trim(),
-                                description = descripcion.trim(),
-                                salary = salario,
-                                imageUrl = imagenUrl.ifBlank { null },
-                                selected = false
-                            )
+                        val nuevo = TaskModel(
+                            id = System.currentTimeMillis().toString(),
+                            title = titulo.trim(),
+                            description = descripcion.trim(),
+                            salary = salario,
+                            imageUrl = null,
+                            selected = false
                         )
-                        // Limpiar y cerrar
+                        onVacanteAdded(nuevo, imageUri)
+                        // Reset campos
                         titulo = ""
                         descripcion = ""
                         salarioText = ""
-                        imagenUrl = ""
+                        imageUri = null
                         onDismiss()
                     },
                     enabled = titulo.isNotBlank() && descripcion.isNotBlank(),
@@ -299,7 +328,6 @@ fun AddTasksDialog(
         }
     }
 }
-
 @Composable
 fun FabDialog(
     modifier: Modifier,

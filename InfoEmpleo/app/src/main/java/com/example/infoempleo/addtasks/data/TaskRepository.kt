@@ -1,8 +1,11 @@
 // /webapps/infoEmpleo-App-android/InfoEmpleo/app/src/main/java/com/example/infoempleo/addtasks/data/TaskRepository.kt
 package com.example.infoempleo.addtasks.data
 
+import android.content.Context
+import android.net.Uri
 import com.example.infoempleo.addtasks.ui.model.TaskModel
 import com.example.infoempleo.vacantes.data.network.VacantesApi
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -11,28 +14,22 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.File
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class TaskRepository @Inject constructor(
-    private val vacantesApi: VacantesApi
+    private val vacantesApi: VacantesApi,
+    @ApplicationContext private val context: Context
 ) {
-    // 1) SharedFlow que siempre reemite incluso si el valor es el mismo
     private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
 
     init {
-        // 2) emisión inicial
         refreshTrigger.tryEmit(Unit)
     }
 
-    /**
-     * Cada vez que refreshTrigger emita (incluyendo la inicial),
-     * recarga la lista de vacantes desde el servidor.
-     */
     val tasks: Flow<List<TaskModel>> = refreshTrigger
         .flatMapLatest {
             flow {
@@ -54,9 +51,10 @@ class TaskRepository @Inject constructor(
 
     /**
      * Crea una nueva vacante en el servidor.
-     * Al terminar, dispara una nueva recarga automática.
+     * @param taskModel datos de la vacante
+     * @param imageUri  URI de la imagen seleccionada (o null)
      */
-    suspend fun add(taskModel: TaskModel, imageFile: File? = null) {
+    suspend fun add(taskModel: TaskModel, imageUri: Uri? = null) {
         withContext(Dispatchers.IO) {
             val tituloRB = taskModel.title
                 .toRequestBody("text/plain".toMediaType())
@@ -66,9 +64,22 @@ class TaskRepository @Inject constructor(
                 .toString()
                 .toRequestBody("text/plain".toMediaType())
 
-            val imagenPart: MultipartBody.Part? = imageFile?.let { file ->
-                val reqFile = file.asRequestBody("image/*".toMediaType())
-                MultipartBody.Part.createFormData("imagen_empresa", file.name, reqFile)
+            // Preparamos la parte de la imagen con su MIME real
+            val imagenPart: MultipartBody.Part? = imageUri?.let { uri ->
+                val input = context.contentResolver.openInputStream(uri)
+                    ?: throw IOException("No se pudo leer URI $uri")
+                val bytes = input.readBytes().also { input.close() }
+
+                val mimeType = context.contentResolver.getType(uri)
+                    ?: "image/jpeg"  // fallback seguro
+                val body = bytes.toRequestBody(mimeType.toMediaType())
+
+                val filename = uri.lastPathSegment ?: "imagen.jpg"
+                MultipartBody.Part.createFormData(
+                    name = "imagen_empresa",
+                    filename = filename,
+                    body = body
+                )
             }
 
             val response = vacantesApi.createVacante(
@@ -77,6 +88,7 @@ class TaskRepository @Inject constructor(
                 salarioOfrecido = salarioRB,
                 imagen_empresa  = imagenPart
             )
+
             if (!response.isSuccessful) {
                 val errorBody = response.errorBody()?.string().orEmpty()
                 throw RuntimeException("Error creando vacante: ${response.code()} $errorBody")
@@ -86,10 +98,11 @@ class TaskRepository @Inject constructor(
     }
 
     /**
-     * Actualiza una vacante existente en el servidor.
-     * Al terminar, dispara una nueva recarga automática.
+     * Actualiza una vacante existente.
+     * @param taskModel datos de la vacante
+     * @param imageUri  URI de la imagen (o null)
      */
-    suspend fun update(taskModel: TaskModel, imageFile: File? = null) {
+    suspend fun update(taskModel: TaskModel, imageUri: Uri? = null) {
         withContext(Dispatchers.IO) {
             val tituloRB = taskModel.title
                 .toRequestBody("text/plain".toMediaType())
@@ -99,9 +112,21 @@ class TaskRepository @Inject constructor(
                 .toString()
                 .toRequestBody("text/plain".toMediaType())
 
-            val imagenPart: MultipartBody.Part? = imageFile?.let { file ->
-                val reqFile = file.asRequestBody("image/*".toMediaType())
-                MultipartBody.Part.createFormData("imagen_empresa", file.name, reqFile)
+            val imagenPart: MultipartBody.Part? = imageUri?.let { uri ->
+                val input = context.contentResolver.openInputStream(uri)
+                    ?: throw IOException("No se pudo leer URI $uri")
+                val bytes = input.readBytes().also { input.close() }
+
+                val mimeType = context.contentResolver.getType(uri)
+                    ?: "image/jpeg"
+                val body = bytes.toRequestBody(mimeType.toMediaType())
+
+                val filename = uri.lastPathSegment ?: "imagen.jpg"
+                MultipartBody.Part.createFormData(
+                    name = "imagen_empresa",
+                    filename = filename,
+                    body = body
+                )
             }
 
             val response = vacantesApi.actualizarVacante(
@@ -111,6 +136,7 @@ class TaskRepository @Inject constructor(
                 salarioOfrecido  = salarioRB,
                 imagen_empresa   = imagenPart
             )
+
             if (!response.isSuccessful) {
                 val errorBody = response.errorBody()?.string().orEmpty()
                 throw RuntimeException("Error actualizando vacante: ${response.code()} $errorBody")
@@ -121,7 +147,6 @@ class TaskRepository @Inject constructor(
 
     /**
      * Elimina una vacante en el servidor.
-     * Al terminar, dispara una nueva recarga automática.
      */
     suspend fun delete(taskModel: TaskModel) {
         withContext(Dispatchers.IO) {
@@ -134,3 +159,4 @@ class TaskRepository @Inject constructor(
         refreshTrigger.tryEmit(Unit)
     }
 }
+
