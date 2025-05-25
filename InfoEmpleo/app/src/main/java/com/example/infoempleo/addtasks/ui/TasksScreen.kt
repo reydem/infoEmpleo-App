@@ -51,7 +51,6 @@ import androidx.compose.material.icons.filled.Photo
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TasksScreen(tasksViewModel: TasksViewModel) {
-        // ← insertar aquí
     // Recupera el estado de autenticación (reclutador / postulante)
     val auth = LocalAuthState.current
     // Estado del diálogo
@@ -98,25 +97,16 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-                    // ← insertar aquí
-        // Mensaje simple según el rol
-        if (auth.esReclutador) {
+            // 1) saludo con zIndex para que quede por encima de la lista y del FAB
             Text(
-                text = "Bienvenido, reclutador",
+                text = if (auth.esReclutador) "Bienvenido, reclutador" else "Bienvenido, postulante",
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 16.dp),
+                    .padding(top = 16.dp)
+                    .zIndex(1f),
                 style = MaterialTheme.typography.titleMedium
             )
-        } else {
-            Text(
-                text = "Bienvenido, postulante",
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 16.dp),
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
+
             when (uiState) {
                 is TasksUiState.Loading -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -132,7 +122,7 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
                     // Lista invertida
                     val tasks = (uiState as TasksUiState.Success).tasks.asReversed()
 
-                    // Hacer scroll a la primera vacante (índice 0) al cambiar la lista
+                    // Al cambiar la lista, hacer scroll a la primera vacante
                     LaunchedEffect(tasks) {
                         if (tasks.isNotEmpty()) {
                             listState.animateScrollToItem(0)
@@ -141,9 +131,15 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
 
                     LazyColumn(
                         state = listState,
+                        contentPadding = PaddingValues(
+                            top = 56.dp,      // deja espacio para el saludo
+                            bottom = 80.dp,   // evita que el FAB tape la última tarjeta
+                            start = 20.dp,
+                            end = 20.dp
+                        ),
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(20.dp)
+                            .zIndex(0f)
                     ) {
                         items(tasks, key = { it.id }) { task ->
                             ItemTask(task, tasksViewModel)
@@ -163,6 +159,7 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
         }
     }
 }
+
 @Composable
 fun TasksList(tasks: List<TaskModel>, tasksViewModel: TasksViewModel) {
 
