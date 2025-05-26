@@ -2,6 +2,7 @@
 package com.example.infoempleo.di
 
 import com.example.infoempleo.login.data.network.LoginClient
+import com.example.infoempleo.usuarios.data.network.UsuariosApi
 import com.example.infoempleo.vacantes.data.network.VacantesApi
 import dagger.Module
 import dagger.Provides
@@ -18,11 +19,13 @@ import com.example.infoempleo.di.network.AuthInterceptor
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-  @Provides @Singleton
+  @Provides
+  @Singleton
   fun provideLoggingInterceptor(): HttpLoggingInterceptor =
     HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
 
-  @Provides @Singleton
+  @Provides
+  @Singleton
   fun provideOkHttpClient(
     authInterceptor: AuthInterceptor,
     logging: HttpLoggingInterceptor
@@ -32,7 +35,8 @@ object NetworkModule {
       .addInterceptor(logging)
       .build()
 
-  @Provides @Singleton
+  @Provides
+  @Singleton
   fun provideRetrofit(client: OkHttpClient): Retrofit =
     Retrofit.Builder()
       .baseUrl("http://10.0.2.2:5000/")
@@ -40,12 +44,19 @@ object NetworkModule {
       .addConverterFactory(GsonConverterFactory.create())
       .build()
 
-  @Provides @Singleton
+  @Provides
+  @Singleton
   fun provideVacantesApi(retrofit: Retrofit): VacantesApi =
     retrofit.create(VacantesApi::class.java)
+
+  @Provides
+  @Singleton
+  fun provideUsuariosApi(retrofit: Retrofit): UsuariosApi =
+    retrofit.create(UsuariosApi::class.java)
   
-  // ← Aquí, el binding que faltaba:
-  @Provides @Singleton
+  @Provides
+  @Singleton
   fun provideLoginClient(retrofit: Retrofit): LoginClient =
     retrofit.create(LoginClient::class.java)
 }
+
