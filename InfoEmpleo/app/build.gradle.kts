@@ -96,6 +96,7 @@ dependencies {
 
     // para cargar imágenes en Compose
     implementation(libs.coil.compose)
+    implementation (libs.androidx.lifecycle.runtime.compose)
 
 
 

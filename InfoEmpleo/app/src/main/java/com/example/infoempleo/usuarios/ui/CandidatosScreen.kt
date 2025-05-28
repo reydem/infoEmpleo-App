@@ -1,4 +1,6 @@
 // /webapps/infoEmpleo-App-android/InfoEmpleo/app/src/main/java/com/example/infoempleo/usuarios/ui/CandidatosScreen.kt
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.infoempleo.usuarios.ui
 
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +18,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,46 +34,59 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.infoempleo.usuarios.data.network.UsuarioDto
-import dagger.hilt.android.lifecycle.HiltViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 
-/**
- * Pantalla que muestra la lista de candidatos (usuarios).
- */
 @Composable
 fun CandidatosScreen(
-    viewModel: CandidatosViewModel = hiltViewModel()
+    viewModel: CandidatosViewModel = hiltViewModel(),
+    onLogout: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    when (uiState) {
-        CandidatosUiState.Loading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        }
-
-        is CandidatosUiState.Error -> {
-            val error = (uiState as CandidatosUiState.Error).throwable
-            Text(
-                text = "Error cargando candidatos: ${error.localizedMessage}",
-                modifier = Modifier.padding(16.dp)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Candidatos") },
+                actions = {
+                    TextButton(onClick = onLogout) {
+                        Text("Cerrar sesión")
+                    }
+                }
             )
         }
-
-        is CandidatosUiState.Success -> {
-            val candidatos = (uiState as CandidatosUiState.Success).candidatos
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(candidatos, key = { it.id }) { candidato ->
-                    CandidatoItem(candidato)
+    ) { padding ->
+        when (uiState) {
+            CandidatosUiState.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            is CandidatosUiState.Error -> {
+                val error = (uiState as CandidatosUiState.Error).throwable
+                Text(
+                    text = "Error cargando candidatos: ${error.localizedMessage}",
+                    modifier = Modifier
+                        .padding(padding)
+                        .padding(16.dp)
+                )
+            }
+            is CandidatosUiState.Success -> {
+                val candidatos = (uiState as CandidatosUiState.Success).candidatos
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(candidatos, key = { it.id }) { candidato ->
+                        CandidatoItem(candidato)
+                    }
                 }
             }
         }
@@ -79,12 +98,10 @@ private fun CandidatoItem(candidato: UsuarioDto) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),                           // igual que ItemTask
-        elevation = CardDefaults.cardElevation(4.dp) // mismo grosor de sombra
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Column(Modifier.padding(16.dp)) {            // mismo padding interior
-
-            // 1) Imagen de perfil (si existe)
+        Column(Modifier.padding(16.dp)) {
             candidato.fotoPerfilUrl?.let { url ->
                 AsyncImage(
                     model = url,
@@ -96,24 +113,17 @@ private fun CandidatoItem(candidato: UsuarioDto) {
                 )
                 Spacer(Modifier.height(8.dp))
             }
-
-            // 2) Nombre del candidato
             Text(
                 text = "${candidato.nombre} ${candidato.primerApellido}",
                 fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(4.dp))
-
-            // 3) Hoja de vida (comportamiento de texto idéntico al de descripción en ItemTask)
             Text(
                 text = "Hoja de vida: ${candidato.hojaVidaPath ?: "No disponible"}",
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
             Spacer(Modifier.height(8.dp))
-
-            // 4) (Opcional) Podrías añadir aquí botones o iconos de acción, alineados con un Row
-            //    de la misma forma que el Checkbox en ItemTask.
         }
     }
 }

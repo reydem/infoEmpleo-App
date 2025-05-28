@@ -1,91 +1,111 @@
 // /webapps/infoEmpleo-App-android/InfoEmpleo/app/src/main/java/com/example/infoempleo/addtasks/ui/TasksScreen.kt
 package com.example.infoempleo.addtasks.ui
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.*
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.produceState
-import androidx.compose.ui.text.font.FontWeight
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
-import com.example.infoempleo.addtasks.ui.model.TaskModel
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.zIndex
-import coil.compose.AsyncImage
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.runtime.*
-import androidx.compose.ui.text.input.KeyboardType
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import coil.compose.AsyncImage
-import com.example.infoempleo.login.di.LocalAuthState    // ← añadir
-
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Photo
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.zIndex
+import coil.compose.AsyncImage
+import com.example.infoempleo.addtasks.ui.model.TaskModel
+import com.example.infoempleo.login.di.LocalAuthState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TasksScreen(tasksViewModel: TasksViewModel) {
-    // Recupera el estado de autenticación (reclutador / postulante)
+fun TasksScreen(
+    tasksViewModel: TasksViewModel,
+    onLogout: () -> Unit
+) {
     val auth = LocalAuthState.current
-    // Estado del diálogo
     val showDialog by tasksViewModel.showDialog.observeAsState(false)
-    // Estado de errores
     val errorMessage by tasksViewModel.errorMessage.observeAsState()
-    // Snackbar
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Mostrar snackbar en cambios de errorMessage
+    // Único uiState, con manejo de ciclo de vida interno
+    val uiState by tasksViewModel.uiState
+        .collectAsStateWithLifecycle(initialValue = TasksUiState.Loading)
+
     LaunchedEffect(errorMessage) {
-        errorMessage?.let { msg ->
-            snackbarHostState.showSnackbar(msg)
+        errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
             tasksViewModel.clearErrorMessage()
         }
     }
 
-    // Estado del UI
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    val uiState by produceState<TasksUiState>(
-        initialValue = TasksUiState.Loading,
-        key1 = lifecycle,
-        key2 = tasksViewModel
-    ) {
-        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            tasksViewModel.uiState.collect { value = it }
-            value
-        }
-    }
-
-    // Estado de scroll
     val listState = rememberLazyListState()
 
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = if (auth.esReclutador) "Vacantes" else "Mis Postulaciones",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                },
+                actions = {
+                    TextButton(onClick = onLogout) {
+                        Text("Cerrar sesión")
+                    }
+                }
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = { tasksViewModel.onShowDialogClick() }) {
                 Icon(Icons.Filled.Add, contentDescription = "Añadir vacante")
@@ -93,14 +113,12 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
         }
     ) { paddingValues ->
         Box(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // 1) saludo con zIndex para que quede por encima de la lista y del FAB
             Text(
                 text = if (auth.esReclutador) "Bienvenido, reclutador" else "Bienvenido, postulante",
-                
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 16.dp)
@@ -108,34 +126,35 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
                 style = MaterialTheme.typography.titleMedium
             )
 
-
             when (uiState) {
-                is TasksUiState.Loading -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                TasksUiState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
                         CircularProgressIndicator()
                     }
                 }
                 is TasksUiState.Error -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text("Error cargando vacantes")
                     }
                 }
                 is TasksUiState.Success -> {
-                    // Lista invertida
                     val tasks = (uiState as TasksUiState.Success).tasks.asReversed()
-
-                    // Al cambiar la lista, hacer scroll a la primera vacante
                     LaunchedEffect(tasks) {
                         if (tasks.isNotEmpty()) {
                             listState.animateScrollToItem(0)
                         }
                     }
-
                     LazyColumn(
                         state = listState,
                         contentPadding = PaddingValues(
-                            top = 56.dp,      // deja espacio para el saludo
-                            bottom = 80.dp,   // evita que el FAB tape la última tarjeta
+                            top = 56.dp,
+                            bottom = 80.dp,
                             start = 20.dp,
                             end = 20.dp
                         ),
@@ -150,17 +169,15 @@ fun TasksScreen(tasksViewModel: TasksViewModel) {
                 }
             }
 
-            // Diálogo de añadir
             AddTasksDialog(
                 show = showDialog,
                 onDismiss = { tasksViewModel.onDialogClose() },
-                onVacanteAdded = { vacanteModel, imageUri ->
-                    tasksViewModel.onTasksCreated(vacanteModel, imageUri)
-                }
+                onVacanteAdded = { vac, uri -> tasksViewModel.onTasksCreated(vac, uri) }
             )
         }
     }
 }
+
 
 @Composable
 fun TasksList(tasks: List<TaskModel>, tasksViewModel: TasksViewModel) {
