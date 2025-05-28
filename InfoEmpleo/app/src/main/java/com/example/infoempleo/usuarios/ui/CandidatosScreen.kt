@@ -1,7 +1,6 @@
 // /webapps/infoEmpleo-App-android/InfoEmpleo/app/src/main/java/com/example/infoempleo/usuarios/ui/CandidatosScreen.kt
 package com.example.infoempleo.usuarios.ui
 
-import com.example.infoempleo.usuarios.ui.CandidatosViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -79,15 +78,13 @@ fun CandidatosScreen(
 private fun CandidatoItem(candidato: UsuarioDto) {
     Card(
         modifier = Modifier
-            .fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .fillMaxWidth()
+            .padding(8.dp),                           // igual que ItemTask
+        elevation = CardDefaults.cardElevation(4.dp) // mismo grosor de sombra
     ) {
-        Column(Modifier.padding(16.dp)) {
-            Text(
-                text = "${candidato.nombre} ${candidato.primerApellido}",
-                fontWeight = FontWeight.Bold
-            )
+        Column(Modifier.padding(16.dp)) {            // mismo padding interior
 
+            // 1) Imagen de perfil (si existe)
             candidato.fotoPerfilUrl?.let { url ->
                 AsyncImage(
                     model = url,
@@ -100,11 +97,23 @@ private fun CandidatoItem(candidato: UsuarioDto) {
                 Spacer(Modifier.height(8.dp))
             }
 
+            // 2) Nombre del candidato
+            Text(
+                text = "${candidato.nombre} ${candidato.primerApellido}",
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(Modifier.height(4.dp))
+
+            // 3) Hoja de vida (comportamiento de texto idéntico al de descripción en ItemTask)
             Text(
                 text = "Hoja de vida: ${candidato.hojaVidaPath ?: "No disponible"}",
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
+            Spacer(Modifier.height(8.dp))
+
+            // 4) (Opcional) Podrías añadir aquí botones o iconos de acción, alineados con un Row
+            //    de la misma forma que el Checkbox en ItemTask.
         }
     }
 }
