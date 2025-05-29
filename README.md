@@ -1,3 +1,33 @@
-# infoEmpleo-App
-# infoEmpleo-app-android
-# infoEmpleo-App
+# 📱 InfoEmpleo - Aplicación Android
+
+Este repositorio contiene el desarrollo de la aplicación móvil **InfoEmpleo**, una plataforma para la gestión de vacantes laborales y postulación de candidatos, desarrollada con **Kotlin**, **Jetpack Compose** y arquitectura **MVVM**.
+
+---
+
+## ⚙️ Configuración del entorno
+
+- **IDE recomendado:** Android Studio Giraffe | Arctic Fox o superior.
+- **Versión del SDK de Android:** API Level 34.
+- **Lenguaje:** Kotlin.
+- **Sistema de diseño:** Material 3 + Jetpack Compose.
+- **Control de versiones:** Git.
+- **Plataforma de backend:** Express.js (Node.js) (no incluida aquí).
+- **Dispositivo mínimo:** API 24 (Android 7.0+)
+
+---
+
+## 🛠️ Librerías principales utilizadas
+
+| Categoría              | Librería             |
+|------------------------|----------------------|
+| Inyección de dependencias | Hilt / Dagger-Hilt |
+| Navegación UI          | Jetpack Navigation-Compose |
+| Comunicación HTTP      | Retrofit + OkHttp    |
+| Gestión de estado      | ViewModel + StateFlow |
+| Almacenamiento local   | DataStore Preferences |
+| Carga de imágenes      | Coil                 |
+| Pruebas unitarias      | JUnit4               |
+
+---
+
+## 🗂️ Estructura del proyecto

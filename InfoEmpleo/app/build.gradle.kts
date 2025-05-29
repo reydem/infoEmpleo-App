@@ -68,6 +68,8 @@ dependencies {
         )
     }
     implementation(libs.androidx.room.common.jvm)
+    implementation(libs.testng)
+    implementation(libs.testng)
     kapt(libs.hilt.android.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
