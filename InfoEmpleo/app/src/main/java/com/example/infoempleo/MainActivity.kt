@@ -9,7 +9,6 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -77,13 +76,9 @@ class MainActivity : ComponentActivity() {
 
                             when {
                                 authState.auth && authState.esReclutador -> {
+                                    // Ahora sólo pasamos onLogout; el VM se inyecta dentro de CandidatosScreen
                                     CandidatosScreen(
-                                        viewModel       = hiltViewModel(),
-                                        onAddCandidato = {
-                                            // TODO: navegar a pantalla de creación de candidato
-                                            // navController.navigate("addCandidato")
-                                        },
-                                        onLogout        = onLogout
+                                        onLogout = onLogout
                                     )
                                 }
                                 authState.auth && !authState.esReclutador -> {
