@@ -6,13 +6,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -82,14 +78,18 @@ class MainActivity : ComponentActivity() {
                             when {
                                 authState.auth && authState.esReclutador -> {
                                     CandidatosScreen(
-                                        viewModel = hiltViewModel(),
-                                        onLogout = onLogout
+                                        viewModel       = hiltViewModel(),
+                                        onAddCandidato = {
+                                            // TODO: navegar a pantalla de creación de candidato
+                                            // navController.navigate("addCandidato")
+                                        },
+                                        onLogout        = onLogout
                                     )
                                 }
                                 authState.auth && !authState.esReclutador -> {
                                     TasksScreen(
                                         tasksViewModel = tasksViewModel,
-                                        onLogout = onLogout
+                                        onLogout       = onLogout
                                     )
                                 }
                                 else -> {
