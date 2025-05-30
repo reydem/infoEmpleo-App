@@ -1,6 +1,6 @@
 # 📱 InfoEmpleo - Aplicación Android
 
-# Video de presentación en Youtube
+## Video de presentación en Youtube
 
 <a href="https://www.youtube.com/watch?v=gZug6DQGf_c">
   <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" width="50" alt="YouTube Icon"/>
