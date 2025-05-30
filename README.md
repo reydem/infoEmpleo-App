@@ -2,6 +2,7 @@
 
 <a href="https://www.youtube.com/watch?v=gZug6DQGf_c">
   <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" width="50" alt="YouTube Icon"/>
+  https://www.youtube.com/watch?v=gZug6DQGf_c
 </a>
 
 [![YouTube Video](https://img.youtube.com/vi/gZug6DQGf_c/0.jpg)](https://www.youtube.com/watch?v=gZug6DQGf_c)
