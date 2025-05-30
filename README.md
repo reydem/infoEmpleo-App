@@ -1,8 +1,7 @@
 # 📱 InfoEmpleo - Aplicación Android
 
-<a href="https://www.youtube.com/watch?v=gZug6DQGf_c">
-  <img src="https://img.youtube.com/vi/gZug6DQGf_c/0.jpg" width="300" alt="Demo Video InfoEmpleo"/>
-</a>
+# [![YouTube](https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg)](https://www.youtube.com/watch?v=gZug6DQGf_c)
+
 [![YouTube Video](https://img.youtube.com/vi/gZug6DQGf_c/0.jpg)](https://www.youtube.com/watch?v=gZug6DQGf_c)
 
 Este repositorio contiene el desarrollo de la aplicación móvil **InfoEmpleo**, una plataforma para la gestión de vacantes laborales y postulación de candidatos, desarrollada con **Kotlin**, **Jetpack Compose** y arquitectura **MVVM**.
